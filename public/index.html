@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pelacak Lokasi</title>
+  </head>
+  <body>
+    <h2>Melacak Lokasi Anda</h2>
+    <p id="status">Memuat lokasi...</p>
+    <p id="lokasi"></p>
+
+    <script>
+      const status = document.getElementById("status");
+      const lokasi = document.getElementById("lokasi");
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (posisi) => {
+            const { latitude, longitude, accuracy } = posisi.coords;
+            status.textContent = "Lokasi berhasil didapatkan!";
+            lokasi.innerHTML = `
+            <strong>Latitude:</strong> ${latitude}<br>
+            <strong>Longitude:</strong> ${longitude}<br>
+            <strong>Accuracy:</strong> ±${accuracy} meter<br>
+          `;
+
+            // Kirim ke server
+            fetch("/api/log-location", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ latitude, longitude, accuracy }),
+            });
+          },
+          (error) => {
+            status.textContent = "Gagal mendapatkan lokasi.";
+            lokasi.textContent = `Error: ${error.message}`;
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          }
+        );
+      } else {
+        status.textContent = "Geolocation tidak didukung oleh browser Anda.";
+      }
+    </script>
+  </body>
+</html>
